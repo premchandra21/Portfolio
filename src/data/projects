@@ -1,0 +1,118 @@
+// src/data/projects.js
+// Fill in your real content here. The diagram nodes/edges will be
+// built out with React Flow in a later pass — for now they carry
+// the same shape the component expects.
+
+export const projects = [
+  {
+    id: "ats",
+    title: "Applicant Tracking System",
+    badge: "fullstack",      // "backend" | "ml" | "fullstack"
+    status: "live",          // "live" | "experimental" | "archived"
+    description:
+      "An end-to-end hiring platform with NLP-powered resume scoring and recruiter dashboards. Built to handle real load, not just demos.",
+    impact:
+      "Cut query time by 30% through Prisma query optimization on a PostgreSQL backend serving concurrent recruiter sessions.",
+    stack: ["FastAPI", "PostgreSQL", "React", "JWT", "NLP"],
+    diagram: {
+      simple: {
+        nodes: [
+          { id: "1", label: "Candidate",  sub: "uploads resume"  },
+          { id: "2", label: "NLP Score",  sub: "ranked instantly" },
+          { id: "3", label: "Recruiter",  sub: "sees ranked list", accent: true },
+        ],
+        edges: [
+          { from: "1", to: "2" },
+          { from: "2", to: "3" },
+        ],
+      },
+      technical: {
+        nodes: [
+          { id: "1", label: "POST /upload", sub: "JWT guard"       },
+          { id: "2", label: "NLP Parser",   sub: "spaCy · TF-IDF" },
+          { id: "3", label: "PostgreSQL",   sub: "Prisma ORM"      },
+          { id: "4", label: "GET /ranked",  sub: "score · threshold", accent: true },
+        ],
+        edges: [
+          { from: "1", to: "2" },
+          { from: "2", to: "3" },
+          { from: "3", to: "4" },
+        ],
+      },
+    },
+  },
+  {
+    id: "nsp",
+    title: "No-Show Prediction",
+    badge: "ml",
+    status: "experimental",
+    description:
+      "A healthcare ML model that predicts appointment no-shows before they happen. Optimised specifically for recall on the minority class — the prediction that actually matters.",
+    impact:
+      "Achieved 0.92 recall on the minority class by tuning XGBoost thresholds and oversampling with SMOTE on a heavily imbalanced dataset.",
+    stack: ["Python", "XGBoost", "SMOTE", "scikit-learn", "pandas"],
+    diagram: {
+      simple: {
+        nodes: [
+          { id: "1", label: "Patient data", sub: "history + context" },
+          { id: "2", label: "ML Model",     sub: "learns patterns"   },
+          { id: "3", label: "Prediction",   sub: "will they show?", accent: true },
+        ],
+        edges: [
+          { from: "1", to: "2" },
+          { from: "2", to: "3" },
+        ],
+      },
+      technical: {
+        nodes: [
+          { id: "1", label: "Raw dataset", sub: "110k records"    },
+          { id: "2", label: "SMOTE",       sub: "class balance"   },
+          { id: "3", label: "XGBoost",     sub: "threshold tuned" },
+          { id: "4", label: "0.92 recall", sub: "minority class", accent: true },
+        ],
+        edges: [
+          { from: "1", to: "2" },
+          { from: "2", to: "3" },
+          { from: "3", to: "4" },
+        ],
+      },
+    },
+  },
+  {
+    id: "cc",
+    title: "CreatorConnect",
+    badge: "fullstack",
+    status: "live",
+    description:
+      "A creator monetisation platform where fans pay for gated content. OAuth login, Razorpay webhooks, and role-based access — all wired together cleanly.",
+    impact:
+      "Handled real payment webhooks with idempotent Razorpay integration — zero double-charges across all test transactions.",
+    stack: ["React", "Node.js", "OAuth", "Razorpay", "MongoDB"],
+    diagram: {
+      simple: {
+        nodes: [
+          { id: "1", label: "Fan logs in", sub: "via Google"       },
+          { id: "2", label: "Payment",     sub: "unlocks content"  },
+          { id: "3", label: "Gated content", sub: "accessible", accent: true },
+        ],
+        edges: [
+          { from: "1", to: "2" },
+          { from: "2", to: "3" },
+        ],
+      },
+      technical: {
+        nodes: [
+          { id: "1", label: "OAuth 2.0",  sub: "Google flow"         },
+          { id: "2", label: "Razorpay",   sub: "webhook · idempotent"},
+          { id: "3", label: "Role check", sub: "MongoDB · RBAC"      },
+          { id: "4", label: "Content served", sub: "access granted", accent: true },
+        ],
+        edges: [
+          { from: "1", to: "2" },
+          { from: "2", to: "3" },
+          { from: "3", to: "4" },
+        ],
+      },
+    },
+  },
+];

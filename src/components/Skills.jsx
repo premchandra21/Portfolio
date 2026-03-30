@@ -1,206 +1,279 @@
-import { motion, useAnimation, useMotionValue } from "framer-motion";
-import React, { useState, useEffect } from "react";
-import jsBg from "../assets/js-bg.webp";
-import frameworkBg from "../assets/framework-bg.webp";
-import dbBg from "../assets/db-bg.png";
-import conceptsBg from "../assets/concepts-bg.png";
-import jsIcon from "../assets/icons/js.png";
-import tsIcon from "../assets/icons/ts.png";
-import javaIcon from "../assets/icons/java.svg";
-import pythonIcon from "../assets/icons/python.webp";
-import cppIcon from "../assets/icons/cpp.png";
-import reactIcon from "../assets/icons/react.webp";
-import nextIcon from "../assets/icons/next.png";
-import nestIcon from "../assets/icons/nest.png";
-import nodeIcon from "../assets/icons/node.png";
-import sklearnIcon from "../assets/icons/sklearn.png";
-import mongodbIcon from "../assets/icons/mongodb.png";
-import postgreIcon from "../assets/icons/postgre.png";
-import gitIcon from "../assets/icons/git.png";
-import postmanIcon from "../assets/icons/postman.png";
-import jupyterIcon from "../assets/icons/jupyter.png";
-import oopIcon from "../assets/icons/oop.png";
-import restAPIIcon from "../assets/icons/restAPI.png";
-import authIcon from "../assets/icons/auth.png";
-import problemIcon from "../assets/icons/problemsolving.png";
+import { useRef, useState } from "react";
+import { motion, useInView } from "framer-motion";
 
-const icons = [
-  jsIcon, tsIcon, javaIcon, pythonIcon, cppIcon,
-  reactIcon, nextIcon, nestIcon, nodeIcon, sklearnIcon,
-  mongodbIcon, postgreIcon, gitIcon, postmanIcon, jupyterIcon,
-  oopIcon, restAPIIcon, authIcon, problemIcon,
+// ─── Data ─────────────────────────────────────────────────────────────────────
+
+const CLUSTERS = [
+  {
+    id: "backend",
+    label: "Backend",
+    sub: "APIs · databases · server logic",
+    skills: [
+      { label: "Node.js" },
+      { label: "Express" },
+      { label: "PostgreSQL" },
+      { label: "MongoDB" },
+      { label: "Redis" },
+      { label: "Prisma" },
+      { label: "REST APIs" },
+      { label: "TypeScript", bridge: true },
+    ],
+  },
+  {
+    id: "frontend",
+    label: "Frontend",
+    sub: "interfaces · motion · styling",
+    skills: [
+      { label: "React" },
+      { label: "Next.js" },
+      { label: "TypeScript", bridge: true },
+      { label: "Tailwind CSS" },
+      { label: "Framer Motion" },
+      { label: "HTML / CSS" },
+    ],
+  },
+  {
+    id: "dataml",
+    label: "Data + ML",
+    sub: "pipelines · models · experiments",
+    skills: [
+      { label: "Python", bridge: true },
+      { label: "pandas" },
+      { label: "scikit-learn" },
+      { label: "Langchain" },
+      { label: "Jupyter" },
+    ],
+  },
 ];
 
-export default function Skills() {
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+const LANGUAGES = ["Python", "TypeScript", "Java"];
 
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+const SOFT_SKILLS = [
+  "Problem Solving",
+  "Systems Thinking",
+  "Fast Learner",
+  "Async Communication",
+  "Attention to Detail",
+];
 
-  const isDesktop = windowWidth > 1450;
+// ─── Chip ─────────────────────────────────────────────────────────────────────
+
+function Chip({ label, bridge = false, index, inView, clusterIndex }) {
+  const [hov, setHov] = useState(false);
+  const delay = clusterIndex * 0.18 + index * 0.045 + 0.3;
 
   return (
-    <section
-      id="skills"
-      className={`bg-green-100 ${isDesktop ? "py-20" : "py-10"} px-6 md:px-20 text-black overflow-hidden`}
+    <motion.span
+      initial={{ opacity: 0, y: 10, scale: 0.94 }}
+      animate={inView ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 10, scale: 0.94 }}
+      transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1], delay }}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        boxShadow: hov
+          ? bridge
+            ? "0 0 0 1px rgba(247,162,79,0.5), 0 2px 12px rgba(247,162,79,0.15)"
+            : "0 0 0 1px rgba(79,142,247,0.45), 0 2px 12px rgba(79,142,247,0.12)"
+          : "none",
+        transform: hov ? "translateY(-2px)" : "translateY(0px)",
+        transition: "transform 0.18s ease, box-shadow 0.18s ease",
+      }}
+      className={`
+        inline-flex items-center gap-1.5
+        font-['JetBrains_Mono',monospace] text-[11px]
+        px-[11px] py-[5px] rounded-md border
+        cursor-default select-none
+        ${bridge
+          ? "text-[#F7A24F] bg-[#F7A24F]/[0.06] border-[#F7A24F]/25 hover:border-[#F7A24F]/60"
+          : "text-[#0E0E12]/60 bg-[#0E0E12]/[0.04] border-[#0E0E12]/9 hover:border-[#4F8EF7]/50 hover:text-[#4F8EF7]"
+        }
+      `}
     >
-      <h2 className="text-4xl md:text-5xl font-bold mb-10 text-green-800 text-center">Skills</h2>
-
-      {isDesktop ? <DesktopSkills /> : <MobileSkills />}
-    </section>
+      {bridge && (
+        <span className="text-[8px] leading-none opacity-80">◆</span>
+      )}
+      {label}
+    </motion.span>
   );
 }
 
-function DesktopSkills() {
-  const [hoveredIndex, setHoveredIndex] = useState(null);
+// ─── Cluster Card ─────────────────────────────────────────────────────────────
 
-  const skillsData = [
-    {
-      title: "Languages",
-      icons: [jsIcon, tsIcon, javaIcon, pythonIcon, cppIcon],
-      bgImage: jsBg,
-      gradient: "from-green-300 to-lime-300",
-    },
-    {
-      title: "Frameworks & Libraries",
-      icons: [reactIcon, nextIcon, nestIcon, nodeIcon, sklearnIcon],
-      bgImage: frameworkBg,
-      gradient: "from-pink-500 to-purple-500",
-    },
-    {
-      title: "Databases & Tools",
-      icons: [mongodbIcon, postgreIcon, gitIcon, postmanIcon, jupyterIcon],
-      bgImage: dbBg,
-      gradient: "from-green-500 to-emerald-400",
-    },
-    {
-      title: "Developer Mindset",
-      icons: [oopIcon, restAPIIcon, authIcon, problemIcon],
-      bgImage: conceptsBg,
-      gradient: "from-slate-300 to-gray-400",
-    },
-  ];
+function ClusterCard({ cluster, index, inView }) {
+  const cardDelay = index * 0.12 + 0.1;
 
   return (
-    <div className="flex gap-6 justify-center items-start w-full">
-      {skillsData.map((skill, idx) => (
-        <motion.div
-          key={idx}
-          onHoverStart={() => setHoveredIndex(idx)}
-          onHoverEnd={() => setHoveredIndex(null)}
-          className="relative h-[300px] rounded-xl shadow-md border border-gray-300 bg-white overflow-hidden cursor-pointer flex-shrink-0"
-          animate={{
-            width: hoveredIndex === idx ? "50vw" : hoveredIndex === null ? "20vw" : "12vw",
-          }}
-          transition={{ type: "spring", stiffness: 120, damping: 20 }}
-          style={{
-            backgroundImage: hoveredIndex === idx ? "none" : `url(${skill.bgImage})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        >
-          {/* Gradient overlay only when hovered */}
-          {hoveredIndex === idx && (
-            <motion.div
-              className={`absolute inset-0 bg-gradient-to-r ${skill.gradient} opacity-90`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-            />
-          )}
+    <motion.div
+      initial={{ opacity: 0, y: 22 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 22 }}
+      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: cardDelay }}
+      className="bg-white border border-[#0E0E12]/8 rounded-xl px-6 py-6 flex flex-col"
+    >
+      <div className="mb-4">
+        <p className="font-['JetBrains_Mono',monospace] text-[10px] text-[#4F8EF7] tracking-[0.07em] uppercase mb-1">
+          {cluster.label}
+        </p>
+        <p className="text-[12px] text-[#0E0E12]/35 leading-snug">
+          {cluster.sub}
+        </p>
+      </div>
 
-          {/* Card Title */}
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
-            <h3 className="text-2xl font-semibold text-green-900 bg-white px-4 py-1 rounded shadow">
-              {skill.title}
-            </h3>
-          </div>
-
-          {/* Icons inside */}
-          {hoveredIndex === idx && (
-            <motion.div
-              className="absolute inset-0 z-30 flex items-center justify-center gap-8 flex-wrap p-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              {skill.icons.map((icon, idx) => (
-                <img
-                  key={idx}
-                  src={icon}
-                  alt="tech icon"
-                  className="w-20 h-20 object-contain hover:scale-110 transition-transform duration-300"
-                />
-              ))}
-            </motion.div>
-          )}
-        </motion.div>
-      ))}
-    </div>
-  );
-}
-
-function MobileSkills() {
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const x = useMotionValue(0);
-  const controls = useAnimation();
-
-  useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const duration = windowWidth < 640 ? 8 : windowWidth < 1024 ? 12 : 14;
-
-  // Function to start auto-scrolling from current position
-  const startAutoScroll = () => {
-    const currentX = x.get();
-    controls.start({
-      x: [currentX, currentX - 500],
-      transition: {
-        ease: "linear",
-        duration: duration,
-        repeat: Infinity,
-        repeatType: "loop",
-      },
-    });
-  };
-
-  useEffect(() => {
-    startAutoScroll();
-  }, [duration]);
-
-  return (
-    <div className="relative w-full overflow-hidden py-4">
-      <motion.div
-        className="flex gap-8 cursor-grab active:cursor-grabbing"
-        style={{ x }}
-        drag="x"
-        dragConstraints={{ left: -1000, right: 1000 }}
-        dragElastic={0.2}
-        onDragStart={() => {
-          controls.stop(); // stop while dragging
-        }}
-        onDragEnd={() => {
-          startAutoScroll(); // resume smoothly from current
-        }}
-        animate={controls}
-      >
-        {[...icons, ...icons].map((icon, idx) => (
-          <img
-            key={idx}
-            src={icon}
-            alt="skill icon"
-            className="w-16 h-16 md:w-20 md:h-20 object-contain"
+      <div className="flex flex-wrap gap-[7px]">
+        {cluster.skills.map((skill, i) => (
+          <Chip
+            key={skill.label + i}
+            label={skill.label}
+            bridge={!!skill.bridge}
+            index={i}
+            clusterIndex={index}
+            inView={inView}
           />
         ))}
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Languages Bar ────────────────────────────────────────────────────────────
+
+function LanguagesBar({ inView }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.72 }}
+      className="bg-white border border-[#0E0E12]/8 rounded-xl px-6 py-4 flex items-center gap-4 flex-wrap"
+    >
+      <p className="font-['JetBrains_Mono',monospace] text-[10px] text-[#4F8EF7] tracking-[0.07em] uppercase shrink-0">
+        Languages
+      </p>
+      <span className="w-px h-4 bg-[#0E0E12]/10 shrink-0" />
+      <div className="flex flex-wrap gap-[7px]">
+        {LANGUAGES.map((lang, i) => (
+          <motion.span
+            key={lang}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={inView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1], delay: 0.78 + i * 0.06 }}
+            className="font-['JetBrains_Mono',monospace] text-[11px] text-[#0E0E12]/55
+              px-[11px] py-[5px] rounded-md border border-[#0E0E12]/9 bg-[#0E0E12]/[0.03]
+              cursor-default"
+          >
+            {lang}
+          </motion.span>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Soft Skills Strip ────────────────────────────────────────────────────────
+
+function SoftSkillsStrip({ inView }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={inView ? { opacity: 1 } : { opacity: 0 }}
+      transition={{ duration: 0.6, delay: 0.95 }}
+      className="mt-2 pt-6 border-t border-[#0E0E12]/[0.06]"
+    >
+      <p className="font-['JetBrains_Mono',monospace] text-[10px] text-[#0E0E12]/25 tracking-[0.07em] uppercase mb-3">
+        Beyond the stack
+      </p>
+      <div className="flex flex-wrap gap-x-6 gap-y-2 items-center">
+        {SOFT_SKILLS.map((s, i) => (
+          <motion.span
+            key={s}
+            initial={{ opacity: 0 }}
+            animate={inView ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: 0.4, delay: 1.0 + i * 0.07 }}
+            className="font-['JetBrains_Mono',monospace] text-[11px] text-[#0E0E12]/30"
+          >
+            {s}
+          </motion.span>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+// ─── Bridge Legend ────────────────────────────────────────────────────────────
+
+function BridgeLegend({ inView }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={inView ? { opacity: 1 } : { opacity: 0 }}
+      transition={{ duration: 0.5, delay: 0.22 }}
+      className="flex flex-wrap items-center gap-x-5 gap-y-1 mb-8"
+    >
+      <span className="font-['JetBrains_Mono',monospace] text-[10px] text-[#0E0E12]/28 flex items-center gap-1.5">
+        <span className="text-[#F7A24F]/70 text-[9px]">◆</span>
+        bridge node — spans multiple clusters
+      </span>
+      <span className="font-['JetBrains_Mono',monospace] text-[10px] text-[#0E0E12]/20">
+        TypeScript bridges Frontend ↔ Backend · Python bridges Languages ↔ Data+ML
+      </span>
+    </motion.div>
+  );
+}
+
+// ─── Fade-up variant ──────────────────────────────────────────────────────────
+
+const fadeUp = (delay = 0) => ({
+  hidden:  { opacity: 0, y: 18 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1], delay } },
+});
+
+// ─── Section ──────────────────────────────────────────────────────────────────
+
+export default function Skills() {
+  const ref    = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-100px" });
+
+  return (
+    <section id="skills" className="bg-[#F7F6F2] py-28 px-6 md:px-16" ref={ref}>
+      <div className="max-w-5xl mx-auto">
+
+        <motion.p
+          variants={fadeUp(0)}
+          initial="hidden"
+          animate={inView ? "visible" : "hidden"}
+          className="font-['JetBrains_Mono',monospace] text-[11px] text-[#4F8EF7] tracking-[0.06em] mb-4"
+        >
+          // 04 — skills
+        </motion.p>
+
+        <motion.h2
+          variants={fadeUp(0.08)}
+          initial="hidden"
+          animate={inView ? "visible" : "hidden"}
+          className="text-[clamp(2rem,4.5vw,2.5rem)] font-semibold text-[#0E0E12] leading-[1.08] tracking-[-0.025em] mb-10"
+        >
+          What I build with.
+        </motion.h2>
+
+        <BridgeLegend inView={inView} />
+
+        {/* Three cluster cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+          {CLUSTERS.map((cluster, i) => (
+            <ClusterCard
+              key={cluster.id}
+              cluster={cluster}
+              index={i}
+              inView={inView}
+            />
+          ))}
+        </div>
+
+        {/* Languages bar */}
+        <LanguagesBar inView={inView} />
+
+        {/* Soft skills */}
+        <SoftSkillsStrip inView={inView} />
+
+      </div>
+    </section>
   );
 }

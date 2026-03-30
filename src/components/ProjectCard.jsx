@@ -1,127 +1,177 @@
-import { motion, useAnimation } from "framer-motion"; // Import useAnimation
-import { FaGithub } from "react-icons/fa";
-import { useState, useEffect } from "react"; // Import useState and useEffect
+import { useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import ProjectDiagram from "./ProjectDiagram";
 
-// Card scaling variant (remains simple)
-const cardVariants = {
-  rest: { scale: 1 },
-  active: { scale: 1.02 }, // Changed 'hover' to 'active' for consistency
+const BADGE_STYLES = {
+  backend:   "bg-[#4F8EF7]/10 text-[#4F8EF7]",
+  ml:        "bg-teal-500/10 text-teal-400",
+  fullstack: "bg-purple-500/10 text-purple-400",
 };
 
-// Description slide-in variant
-const descVariants = {
-  rest: { x: "-100%", opacity: 0, transition: { duration: 0.5, ease: "easeOut" } },
-  active: { x: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
+const STATUS_STYLES = {
+  live:         { dot: "bg-green-500 shadow-[0_0_0_2px_rgba(34,197,94,0.18)]", label: "live" },
+  experimental: { dot: "bg-orange-400 shadow-[0_0_0_2px_rgba(249,115,22,0.18)]", label: "experimental" },
+  archived:     { dot: "bg-[#ffffff]/20", label: "archived" },
 };
 
-// Tech stack slide-in variant
-const techVariants = {
-  rest: { x: "100%", opacity: 0, transition: { duration: 0.5, ease: "easeOut", delay: 0.1 } },
-  active: { x: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut", delay: 0.1 } },
-};
+// Inline SVG icon for the diagram hint
+function GraphIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="2.5" cy="7"   r="1.7" stroke="#4F8EF7" strokeWidth="1.2" />
+      <circle cx="7"   cy="2.5" r="1.7" stroke="#4F8EF7" strokeWidth="1.2" />
+      <circle cx="11.5" cy="7"  r="1.7" stroke="#4F8EF7" strokeWidth="1.2" />
+      <line x1="4.1" y1="6.2" x2="5.4" y2="4.1" stroke="#4F8EF7" strokeWidth="1" opacity=".5" />
+      <line x1="8.6" y1="3.8" x2="9.9" y2="5.9" stroke="#4F8EF7" strokeWidth="1" opacity=".5" />
+    </svg>
+  );
+}
 
-export default function ProjectCard({ title, description, tech, link, image }) {
-  const [isClicked, setIsClicked] = useState(false);
-  const controls = useAnimation(); // Controls for the main card + children animations
+export default function ProjectCard({ project }) {
+  const [open, setOpen]   = useState(false);
+  const [view, setView]   = useState("simple"); // "simple" | "technical"
+  const panelRef          = useRef(null);
 
-  // Function to handle entering the active state (hover or click)
-  const handleActivate = () => {
-    controls.start("active");
-  };
-
-  // Function to handle leaving the active state (hover end or click again)
-  // Only deactivate if not currently in the clicked state after a hover ends.
-  const handleDeactivate = () => {
-    if (!isClicked) {
-      controls.start("rest");
-    }
-  };
-
-  // Function to handle click
-  const handleClick = () => {
-    const newState = !isClicked;
-    setIsClicked(newState);
-    controls.start(newState ? "active" : "rest"); // Directly control state on click
-  };
-
-  // Ensure initial state is set
-  useEffect(() => {
-    controls.start("rest");
-  }, [controls]);
-
+  const status = STATUS_STYLES[project.status] ?? STATUS_STYLES.archived;
 
   return (
-    <motion.div
-      className="relative overflow-hidden rounded-lg shadow-lg border border-gray-700 bg-gray-800 group cursor-pointer"
-      variants={cardVariants} // Use variants for scaling
-      initial="rest"
-      animate={controls} // Control via useAnimation (handles click)
-      onHoverStart={handleActivate} // Activate on hover start
-      onHoverEnd={handleDeactivate} // Deactivate on hover end (if not clicked)
-      onClick={handleClick} // Handle click state toggle
-      layout
-    >
-      {/* Title */}
-      <h3 className="text-xl md:text-2xl font-semibold text-center py-3 text-white bg-gray-900/80 z-20 relative"> {/* Ensure title is above potential image overlap */}
-        {title}
-      </h3>
+    <div className="
+      bg-[#13131E] border border-white/[0.07] rounded-xl overflow-hidden
+      transition-colors duration-200 hover:border-[#4F8EF7]/20
+    ">
+      {/* ── Card body ── */}
+      <div className="p-7 pb-0">
 
-      {/* Image Section */}
-      <div className="relative aspect-video">
-        {/* Image - Give it a base z-index */}
-        <img
-          src={image}
-          alt={`${title} project screenshot`}
-          className="absolute inset-0 w-full h-full object-cover z-0" // Image is base layer
-        />
+        {/* Header row */}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="text-[17px] font-semibold text-white tracking-[-0.01em]">
+              {project.title}
+            </span>
+            <span className={`
+              font-['JetBrains_Mono',monospace] text-[9px] px-2 py-1 rounded-[5px] tracking-[0.04em] font-medium
+              ${BADGE_STYLES[project.badge] ?? BADGE_STYLES.backend}
+            `}>
+              {project.badge}
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 flex-shrink-0 pt-0.5">
+            <div className={`w-[7px] h-[7px] rounded-full ${status.dot}`} />
+            <span className="font-['JetBrains_Mono',monospace] text-[9.5px] text-white/25 tracking-[0.04em]">
+              {status.label}
+            </span>
+          </div>
+        </div>
 
-        {/* Overlay Container - Appears on hover/click */}
-        {/* Controls opacity based on parent's 'active' state via group */}
-         <div className="absolute inset-0 z-10"> {/* Overlay container itself doesn't need complex variants */}
+        {/* Description */}
+        <p className="text-[14px] text-white/42 leading-[1.72] mb-4">
+          {project.description}
+        </p>
 
-            {/* Description slide-in - Uses variants, inherits state from parent 'animate' prop */}
-            <motion.div
-              className="absolute top-0 left-0 h-1/2 w-full bg-gradient-to-r from-black/90 via-black/80 to-transparent flex items-center p-4 md:p-6 pointer-events-none" // Added pointer-events-none
-              variants={descVariants}
-              // No 'initial' or 'animate' here - inherits from parent 'animate={controls}'
+        {/* Impact sentence */}
+        <div className="border-l-2 border-[#F0A500] pl-3.5 mb-5">
+          <p className="text-[13px] text-[#F0A500]/80 leading-[1.65] italic">
+            {project.impact}
+          </p>
+        </div>
+
+        {/* Stack pills */}
+        <div className="flex flex-wrap gap-1.5 pb-6">
+          {project.stack.map((s) => (
+            <span
+              key={s}
+              className="
+                font-['JetBrains_Mono',monospace] text-[10px]
+                text-white/32 bg-white/[0.05] border border-white/[0.07]
+                rounded-[5px] px-2 py-[3px]
+              "
             >
-              <p className="text-gray-200 text-xs md:text-sm lg:text-xs xl:text-sm line-clamp-4 lg:line-clamp-3">
-                {description}
-              </p>
-            </motion.div>
-
-            {/* Tech stack slide-in - Uses variants, inherits state from parent 'animate={controls}' */}
-            <motion.div
-              className="absolute bottom-0 right-0 h-1/2 w-full bg-gradient-to-l from-black/90 via-black/80 to-transparent flex items-center justify-end p-4 md:p-6 pointer-events-none" // Added pointer-events-none
-              variants={techVariants}
-               // No 'initial' or 'animate' here - inherits from parent 'animate={controls}'
-           >
-              <div className="flex flex-wrap gap-2 justify-end">
-                {tech.map((t, i) => (
-                  <span key={i} className="bg-teal-600 text-white text-xs font-semibold px-2 py-1 rounded">
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </motion.div>
+              {s}
+            </span>
+          ))}
         </div>
       </div>
 
-      {/* GitHub Link */}
-      {link && (
-        <motion.a
-          href={link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 bg-gray-900 hover:bg-teal-700 text-white font-medium py-2 px-4 transition-colors duration-300 w-full text-center z-20 relative" // Ensure link is clickable
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          // Prevent link click from triggering card's main onClick
-          onClick={(e) => e.stopPropagation()}
-        >
-          <FaGithub /> GitHub
-        </motion.a>
-      )}
-    </motion.div>
+      {/* ── Diagram hint bar ── */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="
+          w-full mx-0 px-7 py-3
+          flex items-center justify-between gap-3
+          border-t border-dashed border-[#4F8EF7]/18
+          hover:bg-[#4F8EF7]/[0.04] hover:border-[#4F8EF7]/40
+          transition-colors duration-150
+          text-left
+        "
+      >
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-md bg-[#4F8EF7]/10 flex items-center justify-center flex-shrink-0">
+            <GraphIcon />
+          </div>
+          <span className="text-[12.5px] text-white/38">
+            <span className="text-white/65 font-medium">Interactive diagram</span>
+            {" "}— see how {project.title.toLowerCase()} connects
+          </span>
+        </div>
+        <span className="font-['JetBrains_Mono',monospace] text-[10.5px] text-[#4F8EF7] flex-shrink-0">
+          {open ? "Close ✕" : "View architecture →"}
+        </span>
+      </button>
+
+      {/* ── Diagram panel ── */}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="panel"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+            style={{ overflow: "hidden" }}
+            ref={panelRef}
+          >
+            <div className="mx-7 mb-7 border border-white/[0.06] rounded-lg bg-black/25 overflow-hidden">
+
+              {/* Toolbar */}
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.05]">
+                <div className="flex bg-white/[0.05] rounded-md p-[2px] gap-[2px]">
+                  {["simple", "technical"].map((v) => (
+                    <button
+                      key={v}
+                      onClick={() => setView(v)}
+                      className={`
+                        font-['JetBrains_Mono',monospace] text-[10px] px-3 py-1 rounded-[4px]
+                        tracking-[0.03em] transition-colors duration-15
+                        ${view === v
+                          ? "bg-[#4F8EF7] text-white"
+                          : "text-white/32 hover:text-white/55"
+                        }
+                      `}
+                    >
+                      {v.charAt(0).toUpperCase() + v.slice(1)}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setOpen(false)}
+                  className="font-['JetBrains_Mono',monospace] text-[10px] text-white/22 hover:text-white/50 transition-colors"
+                >
+                  close ✕
+                </button>
+              </div>
+
+              {/* Diagram canvas — React Flow goes here */}
+              <div className="h-[220px]">
+                <ProjectDiagram
+                  nodes={project.diagram[view].nodes}
+                  edges={project.diagram[view].edges}
+                />
+              </div>
+
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

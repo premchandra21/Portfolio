@@ -1,60 +1,159 @@
-import React from "react";
-import aboutImg from "../assets/aboutIMG1.png";
+import { useRef } from "react";
 import profile from "../assets/profile.jpg"
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 
-const About = () => {
+const FACTS = [
+  { label: "status", value: "Undergrad — blink and it's gone" },
+  { label: "focus", value: "Backend + genAI" },
+  { label: "next interest", value: "Distributed systems" },
+  { label: "building toward", value: "Something of my own" },
+];
+
+const INTERESTS = [
+  "distributed systems",
+  "GenAI infra",
+  "system design",
+  "ML pipelines",
+  "backend architecture",
+];
+
+const BIO = [
+  <>
+    I'm a CS undergrad drawn to problems that don't have obvious answers. What keeps me going is{" "}
+    <em className="not-italic text-[#0E0E12] font-medium">
+      the clarity when everything finally clicks
+    </em>{" "}
+    — that moment when a system you've been wrestling with suddenly makes sense. I chase that feeling deliberately.
+  </>,
+  <>
+    I care about doing things right, not just doing them. That means thinking end-to-end — from architecture to deployment — and not cutting corners at the seams where most bugs live. My edge is simple:{" "}
+    <em className="not-italic text-[#0E0E12] font-medium">
+      I ship things that actually work.
+    </em>
+  </>,
+  <>
+    I don't have a five-year plan and I'm not pretending I do. What I have is a direction — toward harder problems, toward building things people depend on, and eventually toward something of my own. I'm figuring it out by building.
+  </>,
+];
+
+const fadeUp = (delay = 0) => ({
+  hidden: { opacity: 0, y: 18 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1], delay },
+  },
+});
+
+export default function About() {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-100px" });
+
   return (
-    <motion.section
-      id="about"
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      viewport={{ once: true }}
-      className="w-full bg-gradient-to-b from-[#071a1b] to-[#0e282a] px-6 md:px-20 py-12 flex flex-col items-center justify-center min-h-[80vh]"
-    >
-      {/* Title on Top */}
-      <h2 className="text-3xl sm:text-4xl font-bold mb-8 text-green-400 text-center">
-        About Me
-      </h2>
+    <section id="about" className="bg-[#F7F6F2] py-28 px-6 md:px-16" ref={ref}>
+      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-[1.15fr_0.85fr] gap-16 md:gap-20 items-start">
 
-      {/* Layout changes based on screen size */}
-      <div className="flex flex-col lg:flex-row items-center justify-between w-full max-w-6xl">
-        
-        {/* Image */}
-        <div className="w-full lg:w-1/2 flex justify-center items-center relative mb-8 lg:mb-0 lg:mr-8">
-          <div className="relative w-60 h-60 sm:w-72 sm:h-72 md:w-80 md:h-80 lg:w-96 lg:h-96 flex items-center justify-center">
-            <img
-              src={profile}
-              alt="About me sketch"
-              className="h-full w-full object-cover object-[50%_50%] rounded-full border-4 border-green-400 shadow-lg"
-              // style={{
-              //   filter: "brightness(0.9) contrast(1.1) drop-shadow(0 0 3px rgba(0,200,100,0.3))",
-              //   mixBlendMode: "screen",
-              // }}
-            />
-            <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-[#071a1b] opacity-70 pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-radial from-[rgba(0,200,100,0.03)] via-transparent to-transparent pointer-events-none mix-blend-overlay" />
+        {/* Left — text */}
+        <div>
+          <motion.p
+            variants={fadeUp(0)}
+            initial="hidden"
+            animate={inView ? "visible" : "hidden"}
+            className="font-['JetBrains_Mono',monospace] text-[11px] text-[#4F8EF7] tracking-[0.06em] mb-5"
+          >
+            // 02 — about
+          </motion.p>
+
+          <motion.h2
+            variants={fadeUp(0.1)}
+            initial="hidden"
+            animate={inView ? "visible" : "hidden"}
+            className="text-[clamp(2rem,4.5vw,2.5rem)] font-semibold text-[#0E0E12] leading-[1.08] tracking-[-0.025em] mb-7"
+          >
+            How I think,<br />not just what I build.
+          </motion.h2>
+
+          <div className="flex flex-col gap-[18px]">
+            {BIO.map((para, i) => (
+              <motion.p
+                key={i}
+                variants={fadeUp(0.2 + i * 0.1)}
+                initial="hidden"
+                animate={inView ? "visible" : "hidden"}
+                className="text-[15px] text-[#0E0E12]/60 leading-[1.78]"
+              >
+                {para}
+              </motion.p>
+            ))}
           </div>
+
+          {/* Interest tags */}
+          <motion.div
+            variants={fadeUp(0.55)}
+            initial="hidden"
+            animate={inView ? "visible" : "hidden"}
+            className="flex flex-wrap gap-2 mt-8"
+          >
+            {INTERESTS.map((tag) => (
+              <span
+                key={tag}
+                className="
+                  font-['JetBrains_Mono',monospace] text-[10.5px]
+                  text-[#0E0E12]/48 bg-[#0E0E12]/[0.045]
+                  border border-[#0E0E12]/8
+                  rounded-md px-2.5 py-1
+                "
+              >
+                {tag}
+              </span>
+            ))}
+          </motion.div>
         </div>
 
-        {/* Text */}
-        <div className="w-full lg:w-1/2 text-left text-gray-100">
-          <p className="mb-4 text-base sm:text-lg md:text-xl leading-relaxed text-gray-200">
-            I’m a full-stack developer who values clarity, collaboration, and thoughtful execution. I enjoy building real-world solutions with clean, scalable code and have a strong grasp of React, Node.js, and Tailwind CSS. Lately, I’ve been exploring machine learning and diving into the world of deep learning and generative AI — learning steadily, one model at a time.
-          </p>
+        {/* Right — photo + fact cards */}
+        <motion.div
+          variants={fadeUp(0.15)}
+          initial="hidden"
+          animate={inView ? "visible" : "hidden"}
+          className="flex flex-col gap-3.5 pt-1"
+        >
+          {/* Photo placeholder */}
+          <div
+            className="
+              w-full aspect-[3/4] max-h-[300px]
+              bg-[#0E0E12]/[0.04] border border-[#0E0E12]/8
+              rounded-xl flex flex-col items-center justify-center gap-2.5
+            "
+          >
+            {/* Swap this div for an <img> once you have a photo */}
+            {/* <img src={yourPhoto} alt="Prem" className="w-full h-full object-cover rounded-xl" /> */}
+            <div className="w-10 h-10 rounded-full bg-[#0E0E12]/10" />
+            <img src={profile} alt="Prem" className="w-full h-full object-cover rounded-xl" />
+          </div>
 
-          <p className="mb-4 text-base sm:text-lg md:text-xl leading-relaxed text-gray-200">
-            Hackathons have taught me how to think fast, adapt quickly, and build under pressure — lessons I carry into every team project. I'm also part of <span className="text-green-300 font-semibold">Canopux</span>, our little tech group, where I’ve grown through collaboration and problem-solving.
-          </p>
+          {/* Fact grid */}
+          <div className="grid grid-cols-2 gap-2.5">
+            {FACTS.map(({ label, value }) => (
+              <div
+                key={label}
+                className="
+                  bg-white border border-[#0E0E12]/8
+                  rounded-lg px-3.5 py-3
+                  flex flex-col gap-1
+                "
+              >
+                <span className="font-['JetBrains_Mono',monospace] text-[9px] text-[#0E0E12]/32 tracking-[0.06em] uppercase">
+                  {label}
+                </span>
+                <span className="text-[12.5px] font-medium text-[#0E0E12] leading-snug">
+                  {value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
 
-          <p className="text-base sm:text-lg md:text-xl leading-relaxed text-gray-300">
-            Off the keyboard, I enjoy reading, brainstorming new ideas, and drawing inspiration from chess — always thinking a few steps ahead.
-          </p>
-        </div>
       </div>
-    </motion.section>
+    </section>
   );
-};
-
-export default About;
+}
