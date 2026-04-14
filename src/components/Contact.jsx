@@ -30,7 +30,7 @@ function EmailIcon() {
 }
 
 const SOCIALS = [
-  { href: "https://github.com/Premiiit",                    icon: <GithubIcon />,   label: "GitHub"   },
+  { href: "https://github.com/premchandra21",                    icon: <GithubIcon />,   label: "GitHub"   },
   { href: "https://linkedin.com/in/prem-chandra-648223295", icon: <LinkedinIcon />, label: "LinkedIn" },
   { href: "mailto:prem21pcp@gmail.com",                     icon: <EmailIcon />,    label: "Email"    },
 ];
